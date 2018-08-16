@@ -50,45 +50,40 @@ def initialise_params():
     args_parser.add_argument(
         '--training_path',
         help='Location to training data.',
-        default='gs://energyforecast/data/csv/MLDataTrain.csv'
+        default='gs://mybucket/salt_segmentation/data/csv/train.csv'
     )
     args_parser.add_argument(
         '--validation_path',
         help='Location to validation data.',
-        default='gs://energyforecast/data/csv/MLDataValid.csv'
+        default='gs://mybucket/salt_segmentation/data/csv/valid.csv'
     )
     args_parser.add_argument(
-        '--mean_path',
-        help='Location to pre-computed means.',
-        default='gs://energyforecast/data/pickle/mean.pkl'
+        '--image_path',
+        help='Location of image folder.',
+        default='gs://mybucket/salt_segmentation/train/images/'
     )
     args_parser.add_argument(
-        '--std_path',
-        help='Location to pre-computed standard deviations.',
-        default='gs://energyforecast/data/pickle/std.pkl'
+        '--depth_mean',
+        help='Mean depth on training data.',
+        default=507.904,
+        type=float
+    )
+    args_parser.add_argument(
+        '--depth_std',
+        help='Standard deviation of depth on training data.',
+        default=208.419,
+        type=float
     )
     args_parser.add_argument(
         '--dropout',
         help='Dropout probability.',
-        default=0.2,
+        default=0.3,
         type=float
-    )
-    args_parser.add_argument(
-        '--hour_embedding',
-        help='Size of hour embedding.',
-        default=20,
-        type=int
-    )
-    args_parser.add_argument(
-        '--day_embedding',
-        help='Size of day embedding.',
-        default=10,
-        type=int
     )
     args_parser.add_argument(
         '--first_layer_size',
         help='First layer size.',
-        default=100,
+        default=240,
         type=int
     )
     args_parser.add_argument(
@@ -100,25 +95,25 @@ def initialise_params():
     args_parser.add_argument(
         '--layer_reduction_fraction',
         help='Fraction to reduce layers in network.',
-        default=0.5,
+        default=0.7,
         type=float
     )
     args_parser.add_argument(
         '--learning_rate',
         help='Learning rate.',
-        default=0.01,
+        default=0.001,
         type=float
     )
     args_parser.add_argument(
         '--batch_size',
         help='Training batch size.',
-        default=64,
+        default=32,
         type=int
     )
     args_parser.add_argument(
         '--eval_batch_size',
         help='Evaluation batch size.',
-        default=168,
+        default=32,
         type=int
     )
     args_parser.add_argument(
@@ -126,6 +121,12 @@ def initialise_params():
         help='Maximum steps for training.',
         default=5000,
         type=int
+    )
+    args_parser.add_argument(
+        '--module',
+        help='Hub module to use for images.',
+        default="https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/feature_vector/2",
+        type=str
     )
     return args_parser.parse_args()
 
@@ -143,10 +144,12 @@ def run_experiment(run_config, parameters):
         config=run_config, parameters=parameters)
     train_spec = inputs.get_train_spec(
         parameters.training_path,
+        parameters.image_path,
         parameters.batch_size,
         parameters.max_steps)
     eval_spec = inputs.get_eval_spec(
         parameters.validation_path,
+        parameters.image_path,
         parameters.eval_batch_size)
 
     tf.estimator.train_and_evaluate(

@@ -27,9 +27,7 @@ import multiprocessing
 
 import tensorflow as tf
 
-from constants import constants
-
-TARGET_COLUMN = 'price'
+TARGET_COLUMN = 'salt'
 SHUFFLE_BUFFER_SIZE = 200
 
 
@@ -44,15 +42,8 @@ def parse_csv(record):
     Returns:
         A dictionary with all column names and values for the record.
     """
-    distribution_defaults = [[0.0] for _ in range(constants.DISTRIBUTION_SIZE)]
-    weather_defaults = [[0.0] for _ in range(constants.WEATHER_SIZE)]
-    distribution_cols = ['distribution' +
-                         str(i) for i in range(constants.DISTRIBUTION_SIZE)]
-    weather_cols = ['weather' + str(i) for i in range(constants.WEATHER_SIZE)]
-    header_def = [[0.0], [''], [0], [0]] + \
-        distribution_defaults + weather_defaults
-    column_names = [TARGET_COLUMN, 'date', 'day',
-                    'hour'] + distribution_cols + weather_cols
+    header_def = [[''], [0], [0]]
+    column_names = ['id', 'depth', TARGET_COLUMN]
     columns = tf.decode_csv(record, record_defaults=header_def)
     return dict(zip(column_names, columns))
 
@@ -69,12 +60,40 @@ def get_features_target_tuple(features):
     target = features.pop(TARGET_COLUMN, None)
     return features, target
 
+def load_image(image_path):
+    """Loads and process an image.
 
-def generate_input_fn(file_path, shuffle, batch_size, num_epochs):
+    Args:
+        image_path: Path to image.
+
+    Returns:
+        tensor representing the image.
+    """
+    image_string = tf.read_file(image_path)
+    image_decoded = tf.image.decode_png(image_string,channels=3)
+    image_resized = tf.image.resize_images(image_decoded, [224, 224])
+    return image_resized  
+
+def process_features(features, image_path):
+    """Returns processed features.
+
+    Args:
+        features: Dictionary with all columns.
+        image_path: Path to image folder.
+
+    Returns:
+        processed features.
+    """
+    features['image'] = load_image(image_path + tf.reshape(features['id'],[]) + '.png')
+    return features
+
+
+def generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
     """Generates a data input function.
 
     Args:
         file_path: Path to the data.
+        image_path: Path to image folder.
         shuffle: Boolean flag specifying if data should be shuffled.
         batch_size: Number of records to be read at a time.
         num_epochs: Number of times to go through all of the records.
@@ -93,10 +112,15 @@ def generate_input_fn(file_path, shuffle, batch_size, num_epochs):
         num_threads = multiprocessing.cpu_count()
         dataset = tf.data.TextLineDataset(filenames=[file_path])
         dataset = dataset.skip(1)
-        dataset = dataset.map(lambda x: parse_csv(
-            tf.expand_dims(x, -1)), num_parallel_calls=num_threads)
-        dataset = dataset.map(get_features_target_tuple,
-                              num_parallel_calls=num_threads)
+        dataset = dataset.map(
+            lambda x: parse_csv(tf.expand_dims(x, -1)),
+            num_parallel_calls=num_threads)
+        dataset = dataset.map(
+            get_features_target_tuple,
+            num_parallel_calls=num_threads)
+        dataset = dataset.map(lambda features, target: (
+            process_features(features, image_path),
+            target),num_parallel_calls=num_threads)
         if shuffle:
             dataset = dataset.shuffle(SHUFFLE_BUFFER_SIZE)
         dataset = dataset.batch(batch_size)
@@ -107,33 +131,48 @@ def generate_input_fn(file_path, shuffle, batch_size, num_epochs):
         return features, target
     return _input_fn
 
+def get_serving_function(image_path):
+    """Creates a serving function.
 
-def csv_serving_input_fn():
-    """Creates a `ServingInputReceiver` for inference.
-
-    Creates a  placeholder for the record and specifies how to parse the
-    features from that record.
+    Args:
+        image_path: Path to image folder.
 
     Returns:
-        A `ServingInputReceiver`.
+        Serving function.
     """
-    csv_row = tf.placeholder(
-        dtype=tf.string
-    )
+    def csv_serving_input_fn():
+        """Creates a `ServingInputReceiver` for inference.
 
-    features = parse_csv(csv_row)
-    features, _ = get_features_target_tuple(features)
+        Creates a  placeholder for the record and specifies how to parse the
+        features from that record.
 
-    return tf.estimator.export.ServingInputReceiver(
-        features=features,
-        receiver_tensors={'csv_row': csv_row})
+        Returns:
+            A `ServingInputReceiver`.
+        """
+        csv_row = tf.placeholder(
+            shape=[None],
+            dtype=tf.string
+        )
+
+        features = parse_csv(csv_row)
+        features, _ = get_features_target_tuple(features)
+        features['image'] = tf.map_fn(
+            load_image, image_path + features['id'] + '.png',
+            dtype=tf.float32)
+
+        return tf.estimator.export.ServingInputReceiver(
+            features=features,
+            receiver_tensors={'csv_row': csv_row})
+    
+    return csv_serving_input_fn
 
 
-def get_train_spec(training_path, batch_size, max_steps):
+def get_train_spec(training_path, image_path, batch_size, max_steps):
     """Creates a `TrainSpec` for the `Estimaor`.
 
     Args:
         training_path: Path to training data.
+        image_path: Path to image folder.
         batch_size: Number of records to be read at a time.
         max_steps: Maximum number of steps to take during training.
 
@@ -143,17 +182,19 @@ def get_train_spec(training_path, batch_size, max_steps):
     return tf.estimator.TrainSpec(
         input_fn=generate_input_fn(
             training_path,
+            image_path,
             shuffle=True,
             batch_size=batch_size,
             num_epochs=None),
         max_steps=max_steps)
 
 
-def get_eval_spec(validation_path, batch_size):
+def get_eval_spec(validation_path, image_path, batch_size):
     """Creates an `EvalSpec` for the `Estimaor`.
 
     Args:
         training_path: Path to validation data.
+        image_path: Path to image folder.
         batch_size: Number of records to be read at a time.
 
     Returns:
@@ -161,11 +202,12 @@ def get_eval_spec(validation_path, batch_size):
     """
     exporter = tf.estimator.FinalExporter(
         'estimator',
-        csv_serving_input_fn,
+        get_serving_function(image_path),
         as_text=False)
     return tf.estimator.EvalSpec(
         input_fn=generate_input_fn(
             validation_path,
+            image_path,
             shuffle=False,
             batch_size=batch_size,
             num_epochs=None),

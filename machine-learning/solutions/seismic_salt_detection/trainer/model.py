@@ -25,10 +25,10 @@
 import math
 import pickle
 
+import numpy as np
 import tensorflow as tf
+import tensorflow_hub as hub
 from tensorflow.python.lib.io import file_io
-
-from constants import constants
 
 
 def forward_key_to_export(estimator):
@@ -73,51 +73,40 @@ def create_regressor(config, parameters):
     Returns:
         A configured and ready to use `tf.estimator.DNNRegressor`
     """
-
     # Mean and Standard Deviation Constants for normalization.
-    with file_io.FileIO(parameters.mean_path, mode='r') as f:
-        mean = pickle.load(f)
-    with file_io.FileIO(parameters.std_path, mode='r') as f:
-        std = pickle.load(f)
+    mean = np.float32(parameters.depth_mean)
+    std = np.float32(parameters.depth_std)
 
     # Columns to be used as features.
-    hour = tf.feature_column.categorical_column_with_identity(
-        'hour', num_buckets=24)
-    hour = tf.feature_column.embedding_column(
-        hour, dimension=parameters.hour_embedding)
+    
+    depth = tf.feature_column.numeric_column(
+        'depth',
+        normalizer_fn=(lambda x: (x - mean) / std))
+    
+    image = hub.image_embedding_column('image', parameters.module)
+    
+    feature_cols = [depth,image]
 
-    day = tf.feature_column.categorical_column_with_identity(
-        'day', num_buckets=7)
-    day = tf.feature_column.embedding_column(
-        day, dimension=parameters.day_embedding)
+    def estimator_metrics(labels, predictions):
+        """Creates metrics for Estimator.
 
-    weather = [tf.feature_column.numeric_column(
-        'weather' + str(i),
-        normalizer_fn=(lambda x, i = i: (x - mean[i]) / std[i])
-    ) for i in range(constants.WEATHER_SIZE)]
-
-    distribution = [tf.feature_column.numeric_column(
-        'distribution' + str(i)
-    ) for i in range(constants.DISTRIBUTION_SIZE)]
-
-    feature_cols = [hour, day] + weather + distribution
-
-    # Evaluation metric.
-    def mean_absolute_error(labels, predictions):
-        """Creates mean absolute error metric.
-
-        Metric is used to evaluate the model.
+        Metrics are used to evaluate the model.
 
         Args:
             labels: Evaluation true labels.
             predictions: Evaluation model predictions.
 
         Returns:
-            A dictionary with the evaluation metric
+            A dictionary with the evaluation metrics
         """
-        pred_values = predictions['predictions']
-        return {'mae': tf.metrics.mean_absolute_error(
-            labels, pred_values)}
+        pred_logistic = predictions['logistic']
+        pred_class = predictions['class_ids']
+        return {
+            'accuracy': tf.metrics.accuracy(labels,  pred_class),
+            'auc': tf.metrics.auc(labels, pred_logistic),
+            'auc_pr': tf.metrics.auc(labels, pred_logistic, curve='PR'),
+            'precision': tf.metrics.precision(labels,  pred_class),
+            'recall': tf.metrics.recall(labels,  pred_class)}
 
     layer = parameters.first_layer_size
     lfrac = parameters.layer_reduction_fraction
@@ -127,14 +116,15 @@ def create_regressor(config, parameters):
         h_units.append(math.ceil(layer * lfrac))
         layer = h_units[-1]
 
-    estimator = tf.estimator.DNNRegressor(
+    estimator = tf.estimator.DNNClassifier(
         feature_columns=feature_cols,
         hidden_units=h_units,
         optimizer=tf.train.AdagradOptimizer(
             learning_rate=parameters.learning_rate),
         dropout=parameters.dropout, config=config)
     estimator = tf.contrib.estimator.add_metrics(
-        estimator, mean_absolute_error)
-    estimator = tf.contrib.estimator.forward_features(estimator, 'date')
+        estimator, estimator_metrics)
+    estimator = tf.contrib.estimator.forward_features(estimator, 'id')
     estimator = forward_key_to_export(estimator)
     return estimator
+    
