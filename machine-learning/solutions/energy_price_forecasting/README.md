@@ -50,7 +50,7 @@ gcloud ml-engine jobs submit training ${JOB_NAME} \
         --region=us-central1 \
         --module-name=trainer.task \
         --package-path=trainer \
-        --config=MLEngine/config.yaml
+        --config=config.yaml
 ```
 
 ## Create model

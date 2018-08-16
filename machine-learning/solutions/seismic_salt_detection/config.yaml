@@ -1,10 +1,10 @@
 trainingInput:
   scaleTier: STANDARD_1
   hyperparameters:
-    goal: MINIMIZE
-    hyperparameterMetricTag: mae
+    goal: MAXIMIZE
+    hyperparameterMetricTag: auc
     enableTrialEarlyStopping: True
-    maxTrials: 200
+    maxTrials: 400
     maxParallelTrials: 4
     params:
     - parameterName: dropout
@@ -12,16 +12,6 @@ trainingInput:
       minValue: 0.0
       maxValue: 0.8
       scaleType: UNIT_LINEAR_SCALE
-    - parameterName: hour_embedding
-      type: INTEGER
-      minValue: 1
-      maxValue: 250
-      scaleType: UNIT_LOG_SCALE
-    - parameterName: day_embedding
-      type: INTEGER
-      minValue: 1
-      maxValue: 250
-      scaleType: UNIT_LOG_SCALE
     - parameterName: first_layer_size
       type: INTEGER
       minValue: 2
@@ -45,9 +35,22 @@ trainingInput:
     - parameterName: batch_size
       type: DISCRETE
       discreteValues:
+      - 8
       - 16
       - 32
       - 64
-      - 128
-      - 256
       scaleType: UNIT_LOG_SCALE
+    - parameterName: module
+      type: CATEGORICAL
+      categoricalValues:
+      - https://tfhub.dev/google/imagenet/inception_v1/feature_vector/1
+      - https://tfhub.dev/google/imagenet/inception_v2/feature_vector/1
+      - https://tfhub.dev/google/imagenet/mobilenet_v1_100_224/feature_vector/1
+      - https://tfhub.dev/google/imagenet/mobilenet_v1_025_224/feature_vector/1
+      - https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/feature_vector/2
+      - https://tfhub.dev/google/imagenet/mobilenet_v2_035_224/feature_vector/2
+      - https://tfhub.dev/google/imagenet/nasnet_mobile/feature_vector/1
+      - https://tfhub.dev/google/imagenet/resnet_v1_50/feature_vector/1
+      - https://tfhub.dev/google/imagenet/resnet_v1_152/feature_vector/1
+      - https://tfhub.dev/google/imagenet/resnet_v2_50/feature_vector/1
+      - https://tfhub.dev/google/imagenet/resnet_v2_152/feature_vector/1
