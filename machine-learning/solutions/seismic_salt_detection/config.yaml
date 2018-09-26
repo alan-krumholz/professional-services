@@ -40,7 +40,7 @@ trainingInput:
       - 32
       - 64
       scaleType: UNIT_LOG_SCALE
-    - parameterName: module
+    - parameterName: tf_hub_module
       type: CATEGORICAL
       categoricalValues:
       - https://tfhub.dev/google/imagenet/inception_v1/feature_vector/1

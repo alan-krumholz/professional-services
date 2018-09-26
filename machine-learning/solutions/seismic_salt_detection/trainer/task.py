@@ -123,8 +123,8 @@ def initialise_params():
         type=int
     )
     args_parser.add_argument(
-        '--module',
-        help='Hub module to use for images.',
+        '--tf_hub_module',
+        help='TF Hub module to use for images.',
         default="https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/feature_vector/2",
         type=str
     )

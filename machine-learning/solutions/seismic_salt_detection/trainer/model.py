@@ -83,7 +83,7 @@ def create_regressor(config, parameters):
         'depth',
         normalizer_fn=(lambda x: (x - mean) / std))
     
-    image = hub.image_embedding_column('image', parameters.module)
+    image = hub.image_embedding_column('image', parameters.tf_hub_module)
     
     feature_cols = [depth,image]
 
