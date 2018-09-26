@@ -1,17 +1,17 @@
 #!/usr/bin/env python
-#Copyright 2018 Google LLC
+# Copyright 2018 Google LLC
 #
-#Licensed under the Apache License, Version 2.0 (the "License");
-#you may not use this file except in compliance with the License.
-#You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
-#Unless required by applicable law or agreed to in writing, software
-#distributed under the License is distributed on an "AS IS" BASIS,
-#WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-#See the License for the specific language governing permissions and
-#limitations under the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 # ==============================================================================
 """Defines TensorFlow model.
 
@@ -27,8 +27,8 @@ import pickle
 
 import numpy as np
 import tensorflow as tf
-import tensorflow_hub as hub
 from tensorflow.python.lib.io import file_io
+import tensorflow_hub as hub
 
 
 def forward_key_to_export(estimator):
@@ -78,14 +78,14 @@ def create_classifier(config, parameters):
     std = np.float32(parameters.depth_std)
 
     # Columns to be used as features.
-    
+
     depth = tf.feature_column.numeric_column(
         'depth',
         normalizer_fn=(lambda x: (x - mean) / std))
-    
+
     image = hub.image_embedding_column('image', parameters.tf_hub_module)
-    
-    feature_cols = [depth,image]
+
+    feature_cols = [depth, image]
 
     def estimator_metrics(labels, predictions):
         """Creates metrics for Estimator.
@@ -104,11 +104,11 @@ def create_classifier(config, parameters):
         pred_logistic = predictions['logistic']
         pred_class = predictions['class_ids']
         return {
-            'accuracy': tf.metrics.accuracy(labels,  pred_class),
+            'accuracy': tf.metrics.accuracy(labels, pred_class),
             'auc': tf.metrics.auc(labels, pred_logistic),
             'auc_pr': tf.metrics.auc(labels, pred_logistic, curve='PR'),
-            'precision': tf.metrics.precision(labels,  pred_class),
-            'recall': tf.metrics.recall(labels,  pred_class)}
+            'precision': tf.metrics.precision(labels, pred_class),
+            'recall': tf.metrics.recall(labels, pred_class)}
 
     layer = parameters.first_layer_size
     lfrac = parameters.layer_reduction_fraction
