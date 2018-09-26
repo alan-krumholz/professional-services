@@ -15,11 +15,11 @@
 # ==============================================================================
 """Defines TensorFlow model.
 
-  Defines features and regression model.
+Defines features and classification model.
 
-  Typical usage example:
+Typical usage example:
 
-  model.create_regressor(config, parameters)
+model.create_classifier(config, parameters)
 """
 
 import math
@@ -61,8 +61,8 @@ def forward_key_to_export(estimator):
         return estimatorSpec
     return tf.estimator.Estimator(model_fn=model_fn2, config=config)
 
-def create_regressor(config, parameters):
-    """Creates a DNN regressor.
+def create_classifier(config, parameters):
+    """Creates a DNN classifier.
 
     Defines features and builds an 'Estimator' with them.
 
@@ -71,7 +71,7 @@ def create_regressor(config, parameters):
         parameters: Parameters passed to the job.
 
     Returns:
-        A configured and ready to use `tf.estimator.DNNRegressor`
+        A configured and ready to use `tf.estimator.DNNClassifier`
     """
     # Mean and Standard Deviation Constants for normalization.
     mean = np.float32(parameters.depth_mean)
@@ -90,7 +90,9 @@ def create_regressor(config, parameters):
     def estimator_metrics(labels, predictions):
         """Creates metrics for Estimator.
 
-        Metrics are used to evaluate the model.
+        Metrics defined here can be used to evaluate the model (on evaluation
+        data) and also can be used to maximize or minimize their values during
+        hyper-parameter tunning.
 
         Args:
             labels: Evaluation true labels.

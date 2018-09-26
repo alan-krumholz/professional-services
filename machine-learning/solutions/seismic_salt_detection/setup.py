@@ -14,7 +14,7 @@
 # ==============================================================================
 """Sets up the worker nodes.
 
-  Defines needed Python packages as well as the name and version of the setup.
+Defines needed Python packages as well as the name and version of the setup.
 """
 
 from setuptools import find_packages
@@ -28,5 +28,5 @@ setup(
     version='1.0',
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
-    description='This model detects salt on seismic image.'
+    description='This model detects salt in seismic images.'
 )

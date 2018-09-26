@@ -15,11 +15,11 @@
 # ==============================================================================
 """Runs the TensorFlow experiment.
 
-  Creates a TensorFlow Estimator and trains it.
+Creates a TensorFlow Estimator and trains it.
 
-  Typical usage example:
+Typical usage example:
 
-  Use ML Engine SDK to submit this script
+Use ML Engine SDK to submit this script
 """
 
 import argparse
@@ -140,7 +140,7 @@ def run_experiment(run_config, parameters):
         run_config: Configuration for experiment.
         parameters: Parameters passed to the job.
     """
-    estimator = model.create_regressor(
+    estimator = model.create_classifier(
         config=run_config, parameters=parameters)
     train_spec = inputs.get_train_spec(
         parameters.training_path,

@@ -15,12 +15,12 @@
 # ==============================================================================
 """Takes care of all the input data for the model.
 
-  Parses columns and generates input specifications for `Estimator`.
+Parses columns and generates input specifications for `Estimator`.
 
-  Typical usage example:
+Typical usage example:
 
-  inputs.get_train_spec(parameters)
-  inputs.get_eval_spec(parameters)
+inputs.get_train_spec(parameters)
+inputs.get_eval_spec(parameters)
 """
 
 import multiprocessing
