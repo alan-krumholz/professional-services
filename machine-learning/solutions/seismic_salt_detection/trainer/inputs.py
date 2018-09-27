@@ -123,11 +123,9 @@ def generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
             get_features_target_tuple,
             num_parallel_calls=num_threads)
         dataset = dataset.map(
-            lambda features,
-            target: (
+            lambda features, target: (
                 process_features(features, image_path),
-                target
-            ),
+                target),
             num_parallel_calls=num_threads)
         if shuffle:
             dataset = dataset.shuffle(SHUFFLE_BUFFER_SIZE)
@@ -202,7 +200,7 @@ def get_eval_spec(validation_path, image_path, batch_size):
     """Creates an `EvalSpec` for the `Estimaor`.
 
     Args:
-        training_path: Path to validation data.
+        validation_path: Path to validation data.
         image_path: Path to image folder.
         batch_size: Number of records to be read at a time.
 
