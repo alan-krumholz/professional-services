@@ -48,15 +48,15 @@ def forward_key_to_export(estimator):
     config = estimator.config
 
     def model_fn2(features, labels, mode):
-        estimatorSpec = estimator._call_model_fn(
+        estimator_spec = estimator._call_model_fn(
             features, labels, mode, config=config)
-        if estimatorSpec.export_outputs:
+        if estimator_spec.export_outputs:
             for ekey in ['predict', 'serving_default']:
-                estimatorSpec.export_outputs[
+                estimator_spec.export_outputs[
                     ekey
                 ] = tf.estimator.export.PredictOutput(
-                    estimatorSpec.predictions)
-        return estimatorSpec
+                    estimator_spec.predictions)
+        return estimator_spec
     return tf.estimator.Estimator(model_fn=model_fn2, config=config)
 
 
