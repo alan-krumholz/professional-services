@@ -23,11 +23,9 @@ model.create_classifier(config, parameters)
 """
 
 import math
-import pickle
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.python.lib.io import file_io
 import tensorflow_hub as hub
 
 
@@ -60,6 +58,7 @@ def forward_key_to_export(estimator):
                     estimatorSpec.predictions)
         return estimatorSpec
     return tf.estimator.Estimator(model_fn=model_fn2, config=config)
+
 
 def create_classifier(config, parameters):
     """Creates a DNN classifier.

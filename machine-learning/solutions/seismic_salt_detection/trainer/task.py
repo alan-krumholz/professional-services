@@ -34,10 +34,10 @@ import model
 
 def initialise_params():
     """Parses all arguments and assigns default values when missing.
-    
+
     Convert argument strings to objects and assign them as attributes of the
     namespace.
-    
+
     Returns:
         An object containing all the parsed arguments for script to use.
     """
@@ -125,7 +125,7 @@ def initialise_params():
     args_parser.add_argument(
         '--tf_hub_module',
         help='TF Hub module to use for images.',
-        default="https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/feature_vector/2",
+        default='https://tfhub.dev/google/imagenet/mobilenet_v2_140_224/feature_vector/2',
         type=str
     )
     return args_parser.parse_args()

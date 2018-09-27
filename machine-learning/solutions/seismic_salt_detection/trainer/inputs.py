@@ -60,6 +60,7 @@ def get_features_target_tuple(features):
     target = features.pop(TARGET_COLUMN, None)
     return features, target
 
+
 def load_image(image_path):
     """Loads and process an image.
 
@@ -70,9 +71,10 @@ def load_image(image_path):
         tensor representing the image.
     """
     image_string = tf.read_file(image_path)
-    image_decoded = tf.image.decode_png(image_string,channels=3)
+    image_decoded = tf.image.decode_png(image_string, channels=3)
     image_resized = tf.image.resize_images(image_decoded, [224, 224])
-    return image_resized  
+    return image_resized
+
 
 def process_features(features, image_path):
     """Returns processed features.
@@ -84,7 +86,9 @@ def process_features(features, image_path):
     Returns:
         processed features.
     """
-    features['image'] = load_image(image_path + tf.reshape(features['id'],[]) + '.png')
+    features['image'] = load_image(image_path + tf.reshape(
+        features['id'],
+        []) + '.png')
     return features
 
 
@@ -120,7 +124,7 @@ def generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
             num_parallel_calls=num_threads)
         dataset = dataset.map(lambda features, target: (
             process_features(features, image_path),
-            target),num_parallel_calls=num_threads)
+            target), num_parallel_calls=num_threads)
         if shuffle:
             dataset = dataset.shuffle(SHUFFLE_BUFFER_SIZE)
         dataset = dataset.batch(batch_size)
@@ -130,6 +134,7 @@ def generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
         features, target = iterator.get_next()
         return features, target
     return _input_fn
+
 
 def get_serving_function(image_path):
     """Creates a serving function.
