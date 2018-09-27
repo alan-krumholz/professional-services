@@ -28,6 +28,7 @@ import multiprocessing
 import tensorflow as tf
 
 IMAGE_SIZE = 224
+IMAGE_TYPE = '.png'
 TARGET_COLUMN = 'salt'
 SHUFFLE_BUFFER_SIZE = 200
 
@@ -62,11 +63,11 @@ def get_features_target_tuple(features):
     return features, target
 
 
-def load_image(image_path):
+def _load_image(image_path):
     """Loads and processes an image.
 
     Args:
-        image_path: Path to image.
+        image_path: String with a path to an image.
 
     Returns:
         tensor representing the image.
@@ -84,14 +85,14 @@ def process_features(features, image_path):
 
     Args:
         features: Dictionary with data features.
-        image_path: Path to image folder.
+        image_path: String with path to the folder containing training images.
 
     Returns:
         processed features.
     """
-    features['image'] = load_image(image_path + tf.reshape(
+    features['image'] = _load_image(image_path + tf.reshape(
         features['id'],
-        []) + '.png')
+        []) + IMAGE_TYPE)
     return features
 
 
@@ -167,7 +168,7 @@ def get_serving_function(image_path):
         features = parse_csv(csv_row)
         features, _ = get_features_target_tuple(features)
         features['image'] = tf.map_fn(
-            load_image, image_path + features['id'] + '.png',
+            _load_image, image_path + features['id'] + IMAGE_TYPE,
             dtype=tf.float32)
 
         return tf.estimator.export.ServingInputReceiver(

@@ -60,6 +60,30 @@ def forward_key_to_export(estimator):
     return tf.estimator.Estimator(model_fn=model_fn2, config=config)
 
 
+def _estimator_metrics(labels, predictions):
+    """Creates metrics for Estimator.
+
+    Metrics defined here can be used to evaluate the model (on evaluation
+    data) and also can be used to maximize or minimize their values during
+    hyper-parameter tunning.
+
+    Args:
+        labels: Evaluation true labels.
+        predictions: Evaluation model predictions.
+
+    Returns:
+        A dictionary with the evaluation metrics
+    """
+    pred_logistic = predictions['logistic']
+    pred_class = predictions['class_ids']
+    return {
+        'accuracy': tf.metrics.accuracy(labels, pred_class),
+        'auc': tf.metrics.auc(labels, pred_logistic),
+        'auc_pr': tf.metrics.auc(labels, pred_logistic, curve='PR'),
+        'precision': tf.metrics.precision(labels, pred_class),
+        'recall': tf.metrics.recall(labels, pred_class)}
+
+
 def create_classifier(config, parameters):
     """Creates a DNN classifier.
 
@@ -86,29 +110,6 @@ def create_classifier(config, parameters):
 
     feature_cols = [depth, image]
 
-    def estimator_metrics(labels, predictions):
-        """Creates metrics for Estimator.
-
-        Metrics defined here can be used to evaluate the model (on evaluation
-        data) and also can be used to maximize or minimize their values during
-        hyper-parameter tunning.
-
-        Args:
-            labels: Evaluation true labels.
-            predictions: Evaluation model predictions.
-
-        Returns:
-            A dictionary with the evaluation metrics
-        """
-        pred_logistic = predictions['logistic']
-        pred_class = predictions['class_ids']
-        return {
-            'accuracy': tf.metrics.accuracy(labels, pred_class),
-            'auc': tf.metrics.auc(labels, pred_logistic),
-            'auc_pr': tf.metrics.auc(labels, pred_logistic, curve='PR'),
-            'precision': tf.metrics.precision(labels, pred_class),
-            'recall': tf.metrics.recall(labels, pred_class)}
-
     layer = parameters.first_layer_size
     lfrac = parameters.layer_reduction_fraction
     nlayers = parameters.number_layers
@@ -124,7 +125,7 @@ def create_classifier(config, parameters):
             learning_rate=parameters.learning_rate),
         dropout=parameters.dropout, config=config)
     estimator = tf.contrib.estimator.add_metrics(
-        estimator, estimator_metrics)
+        estimator, _estimator_metrics)
     estimator = tf.contrib.estimator.forward_features(estimator, 'id')
     estimator = forward_key_to_export(estimator)
     return estimator
