@@ -122,9 +122,13 @@ def generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
         dataset = dataset.map(
             get_features_target_tuple,
             num_parallel_calls=num_threads)
-        dataset = dataset.map(lambda features, target: (
-            process_features(features, image_path),
-            target), num_parallel_calls=num_threads)
+        dataset = dataset.map(
+            lambda features,
+            target: (
+                process_features(features, image_path),
+                target
+            ),
+            num_parallel_calls=num_threads)
         if shuffle:
             dataset = dataset.shuffle(SHUFFLE_BUFFER_SIZE)
         dataset = dataset.batch(batch_size)
@@ -168,7 +172,7 @@ def get_serving_function(image_path):
         return tf.estimator.export.ServingInputReceiver(
             features=features,
             receiver_tensors={'csv_row': csv_row})
-    
+
     return csv_serving_input_fn
 
 

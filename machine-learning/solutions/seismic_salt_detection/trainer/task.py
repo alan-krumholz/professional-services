@@ -26,10 +26,10 @@ import argparse
 import json
 import os
 
-import tensorflow as tf
-
 import inputs
 import model
+
+import tensorflow as tf
 
 
 def initialise_params():
