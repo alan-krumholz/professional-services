@@ -73,14 +73,14 @@ def create_classifier(config, parameters):
         A configured and ready to use `tf.estimator.DNNClassifier`
     """
     # Mean and Standard Deviation Constants for normalization.
-    mean = np.float32(parameters.depth_mean)
-    std = np.float32(parameters.depth_std)
+    depth_mean = np.float32(parameters.depth_mean)
+    depth_std = np.float32(parameters.depth_std)
 
     # Columns to be used as features.
 
     depth = tf.feature_column.numeric_column(
         'depth',
-        normalizer_fn=(lambda x: (x - mean) / std))
+        normalizer_fn=(lambda x: (x - depth_mean) / depth_std))
 
     image = hub.image_embedding_column('image', parameters.tf_hub_module)
 

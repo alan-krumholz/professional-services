@@ -27,6 +27,7 @@ import multiprocessing
 
 import tensorflow as tf
 
+IMAGE_SIZE = 224
 TARGET_COLUMN = 'salt'
 SHUFFLE_BUFFER_SIZE = 200
 
@@ -42,9 +43,9 @@ def parse_csv(record):
     Returns:
         A dictionary with all column names and values for the record.
     """
-    header_def = [[''], [0], [0]]
+    column_defaults = [[''], [0], [0]]
     column_names = ['id', 'depth', TARGET_COLUMN]
-    columns = tf.decode_csv(record, record_defaults=header_def)
+    columns = tf.decode_csv(record, record_defaults=column_defaults)
     return dict(zip(column_names, columns))
 
 
@@ -62,7 +63,7 @@ def get_features_target_tuple(features):
 
 
 def load_image(image_path):
-    """Loads and process an image.
+    """Loads and processes an image.
 
     Args:
         image_path: Path to image.
@@ -72,15 +73,17 @@ def load_image(image_path):
     """
     image_string = tf.read_file(image_path)
     image_decoded = tf.image.decode_png(image_string, channels=3)
-    image_resized = tf.image.resize_images(image_decoded, [224, 224])
+    image_resized = tf.image.resize_images(
+        image_decoded,
+        [IMAGE_SIZE, IMAGE_SIZE])
     return image_resized
 
 
 def process_features(features, image_path):
-    """Returns processed features.
+    """Includes processed image in the features.
 
     Args:
-        features: Dictionary with all columns.
+        features: Dictionary with data features.
         image_path: Path to image folder.
 
     Returns:
@@ -103,7 +106,7 @@ def generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
         num_epochs: Number of times to go through all of the records.
 
     Returns:
-        A function useed by `Estimator` to read data.
+        A function used by `Estimator` to read data.
     """
     def _input_fn():
         """Returns features and target from input data.
@@ -145,7 +148,7 @@ def get_serving_function(image_path):
         image_path: Path to image folder.
 
     Returns:
-        Serving function.
+        Serving function to be used during inference.
     """
     def csv_serving_input_fn():
         """Creates a `ServingInputReceiver` for inference.
