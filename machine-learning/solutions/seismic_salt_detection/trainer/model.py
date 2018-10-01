@@ -29,7 +29,7 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 
-def forward_key_to_export(estimator):
+def _forward_key_to_export(estimator):
     """Forwards record key to output during inference.
 
     Temporary workaround. The key and its value will be extracted from input
@@ -47,7 +47,7 @@ def forward_key_to_export(estimator):
     """
     config = estimator.config
 
-    def model_fn2(features, labels, mode):
+    def _model_fn2(features, labels, mode):
         estimator_spec = estimator._call_model_fn(
             features, labels, mode, config=config)
         if estimator_spec.export_outputs:
@@ -57,7 +57,7 @@ def forward_key_to_export(estimator):
                 ] = tf.estimator.export.PredictOutput(
                     estimator_spec.predictions)
         return estimator_spec
-    return tf.estimator.Estimator(model_fn=model_fn2, config=config)
+    return tf.estimator.Estimator(model_fn=_model_fn2, config=config)
 
 
 def _estimator_metrics(labels, predictions):
@@ -78,7 +78,7 @@ def _estimator_metrics(labels, predictions):
     pred_class = predictions['class_ids']
     return {
         'accuracy': tf.metrics.accuracy(labels, pred_class),
-        'auc': tf.metrics.auc(labels, pred_logistic),
+        'auc_roc': tf.metrics.auc(labels, pred_logistic),
         'auc_pr': tf.metrics.auc(labels, pred_logistic, curve='PR'),
         'precision': tf.metrics.precision(labels, pred_class),
         'recall': tf.metrics.recall(labels, pred_class)}
@@ -94,7 +94,7 @@ def create_classifier(config, parameters):
         parameters: Parameters passed to the job.
 
     Returns:
-        A configured and ready to use `tf.estimator.DNNClassifier`
+        `tf.estimator.DNNClassifier` with specified features and architecture.
     """
     # Mean and Standard Deviation Constants for normalization.
     depth_mean = np.float32(parameters.depth_mean)
@@ -127,6 +127,6 @@ def create_classifier(config, parameters):
     estimator = tf.contrib.estimator.add_metrics(
         estimator, _estimator_metrics)
     estimator = tf.contrib.estimator.forward_features(estimator, 'id')
-    estimator = forward_key_to_export(estimator)
+    estimator = _forward_key_to_export(estimator)
     return estimator
     

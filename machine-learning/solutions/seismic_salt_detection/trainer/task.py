@@ -32,7 +32,7 @@ import model
 import tensorflow as tf
 
 
-def initialise_params():
+def _initialise_params():
     """Parses all arguments and assigns default values when missing.
 
     Convert argument strings to objects and assign them as attributes of the
@@ -131,7 +131,7 @@ def initialise_params():
     return args_parser.parse_args()
 
 
-def run_experiment(run_config, parameters):
+def _run_experiment(run_config, parameters):
     """Runs TensorFlow experiment.
 
     Creates the model, trains it, and evaluates it.
@@ -164,7 +164,7 @@ def main():
 
     Orchestrates the script
     """
-    parameters = initialise_params()
+    parameters = _initialise_params()
     tf.logging.set_verbosity(tf.logging.INFO)
     model_dir = os.path.join(parameters.job_dir, json.loads(
         os.environ.get('TF_CONFIG', '{}')).get('task', {}).get('trial', ''))
@@ -175,7 +175,7 @@ def main():
         keep_checkpoint_max=3,
         model_dir=model_dir
     )
-    run_experiment(run_config, parameters)
+    _run_experiment(run_config, parameters)
 
 
 if __name__ == '__main__':
