@@ -19,8 +19,23 @@ Parses columns and generates input specifications for `Estimator`.
 
 Typical usage example:
 
-inputs.get_train_spec(parameters)
-inputs.get_eval_spec(parameters)
+estimator = model.create_classifier(
+    config,
+    parameters)
+train_spec = inputs.get_train_spec(
+    training_path,
+    image_path,
+    batch_size,
+    max_steps)
+eval_spec = inputs.get_eval_spec(
+    validation_path,
+    image_path,
+    eval_batch_size)
+
+tf.estimator.train_and_evaluate(
+    estimator,
+    train_spec,
+    eval_spec)
 """
 
 import multiprocessing
@@ -36,10 +51,10 @@ SHUFFLE_BUFFER_SIZE = 200
 def _parse_csv(record):
     """Parses columns from comma separated record.
 
-    Defines default values and column names for columns.
+    Defines types and column names for columns.
 
     Args:
-        record: String representation of the record.
+        record: Collection of Strings representing records.
 
     Returns:
         A dictionary with all column names and values for the record.
@@ -54,7 +69,7 @@ def _parse_csv(record):
 
 
 def _get_features_target_tuple(features):
-    """Returns features and target.
+    """Separates features from target.
 
     Args:
         features: Dictionary with all columns.
