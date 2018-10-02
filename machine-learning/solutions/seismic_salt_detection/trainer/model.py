@@ -29,37 +29,6 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 
-def _forward_key_to_export(estimator):
-    """Forwards record key to output during inference.
-
-    Temporary workaround. The key and its value will be extracted from input
-    tensors and returned in the prediction dictionary. This is useful to pass
-    record key identifiers. Code came from:
-    https://towardsdatascience.com/how-to-extend-a-canned-tensorflow-estimator-to-add-more-evaluation-metrics-and-to-pass-through-ddf66cd3047d
-    This shouldn't be necessary. (CL/187793590 was filed to update extenders.py
-    with this code)
-
-    Args:
-        estimator: `Estimator` being modified.
-
-    Returns:
-        A modified `Estimator`
-    """
-    config = estimator.config
-
-    def _model_fn2(features, labels, mode):
-        estimator_spec = estimator._call_model_fn(
-            features, labels, mode, config=config)
-        if estimator_spec.export_outputs:
-            for ekey in ['predict', 'serving_default']:
-                estimator_spec.export_outputs[
-                    ekey
-                ] = tf.estimator.export.PredictOutput(
-                    estimator_spec.predictions)
-        return estimator_spec
-    return tf.estimator.Estimator(model_fn=_model_fn2, config=config)
-
-
 def _estimator_metrics(labels, predictions):
     """Creates metrics for Estimator.
 
@@ -127,6 +96,5 @@ def create_classifier(config, parameters):
     estimator = tf.contrib.estimator.add_metrics(
         estimator, _estimator_metrics)
     estimator = tf.contrib.estimator.forward_features(estimator, 'id')
-    estimator = _forward_key_to_export(estimator)
     return estimator
     

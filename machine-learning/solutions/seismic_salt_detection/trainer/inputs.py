@@ -44,7 +44,10 @@ def _parse_csv(record):
     Returns:
         A dictionary with all column names and values for the record.
     """
-    column_defaults = [[''], [0], [0]]
+    column_defaults = [
+        tf.constant([], tf.string),
+        tf.constant([], tf.int32),
+        tf.constant([], tf.int32)]
     column_names = ['id', 'depth', TARGET_COLUMN]
     columns = tf.decode_csv(record, record_defaults=column_defaults)
     return dict(zip(column_names, columns))
