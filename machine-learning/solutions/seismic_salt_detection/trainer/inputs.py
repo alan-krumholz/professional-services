@@ -127,7 +127,7 @@ def _process_features(features, image_path):
     features['image'] = _load_image(
         _create_image_path(
             image_path,
-            tf.reshape(features['id'],[])))
+            tf.reshape(features['id'], [])))
     return features
 
 
@@ -159,7 +159,7 @@ def _generate_input_fn(file_path, image_path, shuffle, batch_size, num_epochs):
             lambda x: _parse_csv(tf.expand_dims(x, -1)),
             num_parallel_calls=num_threads)
         dataset = dataset.map(
-            lambda x : _process_features(x, image_path),
+            lambda x: _process_features(x, image_path),
             num_parallel_calls=num_threads)
         dataset = dataset.map(
             _get_features_target_tuple,
@@ -202,7 +202,7 @@ def _get_serving_function(image_path):
         features, _ = _get_features_target_tuple(features)
         features['image'] = tf.map_fn(
             _load_image,
-            _create_image_path(image_path ,features['id']),
+            _create_image_path(image_path, features['id']),
             dtype=tf.float32)
 
         return tf.estimator.export.ServingInputReceiver(

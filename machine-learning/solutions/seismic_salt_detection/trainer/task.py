@@ -33,6 +33,7 @@ import tensorflow as tf
 
 TF_HUB_IMAGENET = 'https://tfhub.dev/google/imagenet/'
 
+
 def _initialise_params():
     """Parses all arguments and assigns default values when missing.
 
