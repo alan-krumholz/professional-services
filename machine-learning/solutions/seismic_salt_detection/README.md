@@ -1,5 +1,8 @@
 # Train, tune hyper-parameters, publish model, and predict.
 
+## Prework
+Calculate mean and standard deviation of the depth column using training data.
+
 ## Default values
 ```
 JOB_NAME = ml_job$(date +%Y%m%d%H%M%S)
@@ -20,7 +23,10 @@ gcloud ml-engine jobs submit training $JOB_NAME \
         --region=us-central1 \
         --scale-tier=PREMIUM_1 \
         --module-name=trainer.task \
-        --package-path=trainer
+        --package-path=trainer \
+        -- \
+        --depth_mean=507.904 \
+        --depth_std=208.419
 ```
 
 ## Hyper-parameter tuning
@@ -32,6 +38,9 @@ gcloud ml-engine jobs submit training ${JOB_NAME} \
         --module-name=trainer.task \
         --package-path=trainer \
         --config=config.yaml
+        -- \
+        --depth_mean=507.904 \
+        --depth_std=208.419
 ```
 
 ## Create model

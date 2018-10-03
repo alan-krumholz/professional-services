@@ -67,13 +67,13 @@ def _initialise_params():
     args_parser.add_argument(
         '--depth_mean',
         help='Mean depth on training data.',
-        default=507.904,
+        required=True,
         type=float
     )
     args_parser.add_argument(
         '--depth_std',
         help='Standard deviation of depth on training data.',
-        default=208.419,
+        required=True,
         type=float
     )
     args_parser.add_argument(

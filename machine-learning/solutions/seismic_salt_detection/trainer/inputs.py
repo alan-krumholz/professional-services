@@ -54,7 +54,8 @@ def _parse_csv(record):
     Defines types and column names for columns.
 
     Args:
-        record: Collection of Strings representing records.
+        record: A Tensor of type string. Each string is a record/row in the csv
+        and all records should have the same format.
 
     Returns:
         A dictionary with all column names and values for the record.
