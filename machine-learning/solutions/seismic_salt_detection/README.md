@@ -37,7 +37,7 @@ gcloud ml-engine jobs submit training ${JOB_NAME} \
         --region=us-central1 \
         --module-name=trainer.task \
         --package-path=trainer \
-        --config=config.yaml
+        --config=config.yaml \
         -- \
         --depth_mean=507.904 \
         --depth_std=208.419
