@@ -64,5 +64,6 @@ gcloud ml-engine jobs submit prediction ${JOB_NAME} \
     --output-path=gs://${BUCKET_NAME}/${PREDICTIONS_FOLDER} \
     --region=us-central1 \
     --data-format=TEXT \
+    --signature-name=predict \
     --version=${MODEL_VERSION}
 ```
