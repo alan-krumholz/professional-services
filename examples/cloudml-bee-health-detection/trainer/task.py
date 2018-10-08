@@ -52,29 +52,23 @@ def _initialise_params():
     args_parser.add_argument(
         '--training_path',
         help='Location to training data.',
-        default='gs://mybucket/salt_segmentation/data/csv/train.csv'
+        default='gs://bee-health/data/train.csv'
     )
     args_parser.add_argument(
         '--validation_path',
         help='Location to validation data.',
-        default='gs://mybucket/salt_segmentation/data/csv/valid.csv'
+        default='gs://bee-health/data/valid.csv'
     )
     args_parser.add_argument(
         '--image_path',
         help='Location of image folder.',
-        default='gs://mybucket/salt_segmentation/train/images/'
+        default='gs://bee-health/bee_imgs/'
     )
     args_parser.add_argument(
-        '--depth_mean',
-        help='Mean depth on training data.',
-        required=True,
-        type=float
-    )
-    args_parser.add_argument(
-        '--depth_std',
-        help='Standard deviation of depth on training data.',
-        required=True,
-        type=float
+        '--subspecies_embedding',
+        help='Size of subspecies embedding.',
+        default=20,
+        type=int
     )
     args_parser.add_argument(
         '--dropout',

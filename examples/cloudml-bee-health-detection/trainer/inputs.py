@@ -43,8 +43,7 @@ import multiprocessing
 import tensorflow as tf
 
 IMAGE_SIZE = 224
-IMAGE_TYPE = '.png'
-TARGET_COLUMN = 'salt'
+TARGET_COLUMN = 'unhealthy'
 SHUFFLE_BUFFER_SIZE = 200
 
 
@@ -62,9 +61,9 @@ def _parse_csv(record):
     """
     column_defaults = [
         tf.constant([], tf.string),
-        tf.constant([], tf.int32),
+        tf.constant([], tf.string),
         tf.constant([], tf.int32)]
-    column_names = ['id', 'depth', TARGET_COLUMN]
+    column_names = ['file', 'subspecies', TARGET_COLUMN]
     columns = tf.decode_csv(record, record_defaults=column_defaults)
     return dict(zip(column_names, columns))
 
@@ -109,7 +108,7 @@ def _create_image_path(image_path, image_id):
     Returns:
         String with path to the specific image.
     """
-    return image_path + image_id + IMAGE_TYPE
+    return image_path + image_id
 
 
 def _process_features(features, image_path):
@@ -128,7 +127,7 @@ def _process_features(features, image_path):
     features['image'] = _load_image(
         _create_image_path(
             image_path,
-            tf.reshape(features['id'], [])))
+            tf.reshape(features['file'], [])))
     return features
 
 
@@ -203,7 +202,7 @@ def _get_serving_function(image_path):
         features, _ = _get_features_target_tuple(features)
         features['image'] = tf.map_fn(
             _load_image,
-            _create_image_path(image_path, features['id']),
+            _create_image_path(image_path, features['file']),
             dtype=tf.float32)
 
         return tf.estimator.export.ServingInputReceiver(

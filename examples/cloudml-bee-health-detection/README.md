@@ -1,4 +1,4 @@
-# Energy Price Forecasting Example
+# Bee Health Detection Example
 
 This repository contains example code detect if a bee is healthy. Specifically, given a picture and structured attributes about a bee, it predicts if the bee is healthy. 
 

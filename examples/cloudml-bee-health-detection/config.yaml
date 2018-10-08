@@ -12,6 +12,11 @@ trainingInput:
       minValue: 0.0
       maxValue: 0.8
       scaleType: UNIT_LINEAR_SCALE
+    - parameterName: subspecies_embedding
+      type: INTEGER
+      minValue: 1
+      maxValue: 250
+      scaleType: UNIT_LOG_SCALE
     - parameterName: first_layer_size
       type: INTEGER
       minValue: 2

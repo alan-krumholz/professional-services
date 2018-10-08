@@ -65,19 +65,16 @@ def create_classifier(config, parameters):
     Returns:
         `tf.estimator.DNNClassifier` with specified features and architecture.
     """
-    # Mean and Standard Deviation Constants for normalization.
-    depth_mean = np.float32(parameters.depth_mean)
-    depth_std = np.float32(parameters.depth_std)
-
     # Columns to be used as features.
-
-    depth = tf.feature_column.numeric_column(
-        'depth',
-        normalizer_fn=(lambda x: (x - depth_mean) / depth_std))
+    subspecies = tf.feature_column.categorical_column_with_vocabulary_list(
+        'subspecies',
+        ['Carniolan','Italian','Russian','Other'])
+    subspecies = tf.feature_column.embedding_column(
+        subspecies, dimension=parameters.subspecies_embedding)
 
     image = hub.image_embedding_column('image', parameters.tf_hub_module)
 
-    feature_cols = [depth, image]
+    feature_cols = [subspecies, image]
 
     layer = parameters.first_layer_size
     lfrac = parameters.layer_reduction_fraction
@@ -95,6 +92,6 @@ def create_classifier(config, parameters):
         dropout=parameters.dropout, config=config)
     estimator = tf.contrib.estimator.add_metrics(
         estimator, _estimator_metrics)
-    estimator = tf.contrib.estimator.forward_features(estimator, 'id')
+    estimator = tf.contrib.estimator.forward_features(estimator, 'file')
     return estimator
     
