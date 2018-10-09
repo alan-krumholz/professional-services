@@ -29,6 +29,9 @@ import tensorflow as tf
 import tensorflow_hub as hub
 
 
+BEE_SUBSPECIES = ['Carniolan', 'Italian', 'Russian', 'Other']
+
+
 def _estimator_metrics(labels, predictions):
     """Creates metrics for Estimator.
 
@@ -68,7 +71,7 @@ def create_classifier(config, parameters):
     # Columns to be used as features.
     subspecies = tf.feature_column.categorical_column_with_vocabulary_list(
         'subspecies',
-        ['Carniolan','Italian','Russian','Other'])
+        BEE_SUBSPECIES)
     subspecies = tf.feature_column.embedding_column(
         subspecies, dimension=parameters.subspecies_embedding)
 
@@ -92,6 +95,6 @@ def create_classifier(config, parameters):
         dropout=parameters.dropout, config=config)
     estimator = tf.contrib.estimator.add_metrics(
         estimator, _estimator_metrics)
-    estimator = tf.contrib.estimator.forward_features(estimator, 'file')
+    estimator = tf.contrib.estimator.forward_features(estimator, 'img_file')
     return estimator
     

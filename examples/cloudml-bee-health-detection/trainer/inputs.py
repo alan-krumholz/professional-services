@@ -63,7 +63,7 @@ def _parse_csv(record):
         tf.constant([], tf.string),
         tf.constant([], tf.string),
         tf.constant([], tf.int32)]
-    column_names = ['file', 'subspecies', TARGET_COLUMN]
+    column_names = ['img_file', 'subspecies', TARGET_COLUMN]
     columns = tf.decode_csv(record, record_defaults=column_defaults)
     return dict(zip(column_names, columns))
 
@@ -127,7 +127,7 @@ def _process_features(features, image_path):
     features['image'] = _load_image(
         _create_image_path(
             image_path,
-            tf.reshape(features['file'], [])))
+            tf.reshape(features['img_file'], [])))
     return features
 
 
@@ -202,7 +202,7 @@ def _get_serving_function(image_path):
         features, _ = _get_features_target_tuple(features)
         features['image'] = tf.map_fn(
             _load_image,
-            _create_image_path(image_path, features['file']),
+            _create_image_path(image_path, features['img_file']),
             dtype=tf.float32)
 
         return tf.estimator.export.ServingInputReceiver(
