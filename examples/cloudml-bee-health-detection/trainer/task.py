@@ -67,37 +67,37 @@ def _initialise_params():
     args_parser.add_argument(
         '--subspecies_embedding',
         help='Size of subspecies embedding.',
-        default=20,
+        default=1,
         type=int
     )
     args_parser.add_argument(
         '--dropout',
         help='Dropout probability.',
-        default=0.3,
+        default=0.3737,
         type=float
     )
     args_parser.add_argument(
         '--first_layer_size',
         help='First layer size.',
-        default=240,
+        default=308,
         type=int
     )
     args_parser.add_argument(
         '--number_layers',
         help='Number of hidden layers.',
-        default=3,
+        default=8,
         type=int
     )
     args_parser.add_argument(
         '--layer_reduction_fraction',
         help='Fraction to reduce layers in network.',
-        default=0.7,
+        default=0.91,
         type=float
     )
     args_parser.add_argument(
         '--learning_rate',
         help='Learning rate.',
-        default=0.001,
+        default=0.0031,
         type=float
     )
     args_parser.add_argument(
@@ -121,7 +121,7 @@ def _initialise_params():
     args_parser.add_argument(
         '--tf_hub_module',
         help='TF Hub module to use for images.',
-        default=TF_HUB_IMAGENET + 'mobilenet_v2_140_224/feature_vector/2',
+        default=TF_HUB_IMAGENET + 'mobilenet_v1_025_224/feature_vector/1',
         type=str
     )
     return args_parser.parse_args()
