@@ -24,12 +24,11 @@ model.create_classifier(config, parameters)
 
 import math
 
-import numpy as np
 import tensorflow as tf
 import tensorflow_hub as hub
 
 
-BEE_SUBSPECIES = ['Carniolan', 'Italian', 'Russian', 'Other']
+BEE_SUBSPECIES = ['Other', 'Carniolan', 'Italian', 'Russian']
 
 
 def _estimator_metrics(labels, predictions):
@@ -71,7 +70,8 @@ def create_classifier(config, parameters):
     # Columns to be used as features.
     subspecies = tf.feature_column.categorical_column_with_vocabulary_list(
         'subspecies',
-        BEE_SUBSPECIES)
+        vocabulary_list=BEE_SUBSPECIES,
+        default_value=0)
     subspecies = tf.feature_column.embedding_column(
         subspecies, dimension=parameters.subspecies_embedding)
 
