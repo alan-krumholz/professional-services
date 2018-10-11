@@ -24,9 +24,9 @@ from setuptools import setup
 REQUIRED_PACKAGES = ['tensorflow-hub']
 
 setup(
-    name='salt_detector',
+    name='bee_health_detector',
     version='1.0',
     install_requires=REQUIRED_PACKAGES,
     packages=find_packages(),
-    description='This model detects salt in seismic images.'
+    description='This model detects if a bee is in good health.'
 )
